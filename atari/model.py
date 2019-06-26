@@ -46,33 +46,47 @@ class CNNModel:
 
         # First, add CNN layers
         for cnn_hp in cnn_layers:
-            # TODO: unpack dict, not working this way
-            self.model.add(Conv2D(cnn_hp))
+            self.model.add(Conv2D(filters=cnn_hp["filters"],
+                                  kernel_size=cnn_hp["kernel_size"],
+                                  strides=cnn_hp["strides"],
+                                  padding=cnn_hp["padding"],
+                                  activation=cnn_hp["activation"],
+                                  input_shape=cnn_hp["input_shape"],
+                                  data_format=cnn_hp["data_format"])
+                           )
 
         # Second, flatten
         self.model.add(Flatten())
 
         # Third, add dense layers
         for dense_hp in dense_layers:
-            self.model.add(Dense(dense_hp))
+            if "activation" not in dense_hp.keys():
+                activation = None
+            else:
+                activation = dense_hp["activation"]
+            self.model.add(Dense(units=dense_hp["units"],
+                                 activation=activation))
 
         # Last, compile
-        self.model.compile(compiler)
+        self.model.compile(loss=compiler["loss"],
+                           optimizer=compiler["optimizer"],
+                           metrics=compiler["metrics"])
 
         return self.model.summary()
+
 
 cnn = CNNModel()
 
 conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
-          "activation": "relu", "input_shape": (84, 84, 1, 32), "data_format":
-          "channels_first"}
+          "activation": "relu", "input_shape": (4, 84, 84),
+          "data_format":"channels_first"}
 
 conv_2 = {"filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
-          "activation": "relu", "input_shape": (84, 84, 1, 32),
+          "activation": "relu", "input_shape": (4, 84, 84),
           "data_format": "channels_first"}
 
 conv_3 = {"filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
-          "activation": "relu", "input_shape": (84, 84, 1, 32),
+          "activation": "relu", "input_shape": (4, 84, 84),
           "data_format": "channels_first"}
 
 dense_1 = {"units": 512, "activation": "relu"}
@@ -84,9 +98,7 @@ compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
                                                                epsilon=0.01),
             "metrics": ["accuracy"]}
 
-hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [
-    dense_1, dense_2], "compiler": compiler}
-
-Conv2D( )
+hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
+      "compiler": compiler}
 
 cnn.set_model_params(hp)
