@@ -34,17 +34,17 @@ class DDQNNGame:
         self.memory = []
         
     
-    def get_model_copy(model):
+    def get_model_copy(self, model):
         # TODO: ver como copiar modelo
         return model_copy
     
     def move(self, state):
         if self.train is False:
             if np.random.rand() < self.ddqnn_params["exploration_test"]:
-                return random.randrange(self.action_space)
+                return random.randrange(self.env.action_space)
         else:
             if np.random.rand() < self.epsilon or len(self.memory) < self.ddqnn_params["replay_start_size"]:
-                return random.randrange(self.action_space)
+                return random.randrange(self.env.action_space)
         
         q_values = self.base_model.predict(np.expand_dims(np.asarray(state).astype(np.float64), axis=0), batch_size=1)
         return np.argmax(q_values[0])
