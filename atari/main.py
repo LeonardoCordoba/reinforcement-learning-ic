@@ -1,5 +1,10 @@
 from keras.optimizers import RMSprop
 from model import CNNModel
+# REQUIREMENTS:
+# Open AI Gym (pip install gym[all])
+# OpenCV
+# JSAnimation - Only for Jupyter Display
+# ImageIO 
 
 # Instantiate model
 cnn = CNNModel()
@@ -29,3 +34,18 @@ hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
       "compiler": compiler}
 
 cnn.set_model_params(hp)
+
+# Play random
+import gym
+import random
+import matplotlib.pyplot as plt
+#import cv2
+
+env = gym.make('SpaceInvaders-v0')
+env.reset()
+frameshistory=[]
+done=False
+while not done:
+      action = random.sample(list(range(6)), k=1)
+      obs, reward, done, info = env.step(action)
+      frameshistory.append(obs)
