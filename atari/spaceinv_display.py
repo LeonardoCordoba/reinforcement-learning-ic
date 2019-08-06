@@ -39,64 +39,13 @@ def display_frames_as_gif_notebook(frames, filename_gif = None):
 
 #display_frames_as_gif_notebook(frameshistory, 'playing_space_invaders_random.gif')
 
-
-# Plot a trajectory
-
-import gym
-import random
-import matplotlib.pyplot as plt
-#import cv2
-
-env = gym.make('SpaceInvaders-v0')
-env.reset()
-frameshistory=[]
-done=False
-while not done:
-      action = random.sample(list(range(6)), k=1)
-      obs, reward, done, info = env.step(action)
-      frameshistory.append(obs)
-
-display_frames_as_gif(frameshistory, 'playing_space_invaders_random.gif')
-
 import imageio
 from PIL import Image
 
-imageio.mimsave('atari/trajectories/playing_space_invaders_random.gif', frameshistory, fps=30)
-#img = Image.open('atari/trajectories/playing_space_invaders_random.gif').convert('RGB')
-
-def f(x, y):
-    return np.sin(x) + np.cos(y)
-
-x = np.linspace(0, 2 * np.pi, 120)
-y = np.linspace(0, 2 * np.pi, 100).reshape(-1, 1)
-# ims is a list of lists, each row is a list of artists to draw in the
-# current frame; here we are just animating one artist, the image, in
-# each frame
-ims = []
-for i in range(60):
-    x += np.pi / 15.
-    y += np.pi / 20.
-    im = plt.imshow(f(x, y), animated=True)
-    ims.append([im])
-
-ani = animation.ArtistAnimation(fig, ims, interval=50, blit=True,
-                                repeat_delay=1000)
-
-# ani.save('dynamic_images.mp4')
-
-plt.show()
-
-# otra opcion
-
-import datetime
-import imageio
-
-VALID_EXTENSIONS = ('png', 'jpg')
-
-
-def create_gif(filenames, duration):
-    images = []
-    for filename in filenames:
-        images.append(imageio.imread(filename))
-    output_file = 'Gif-%s.gif' % datetime.datetime.now().strftime('%Y-%M-%d-%H-%M-%S')
-    imageio.mimsave(output_file, images, duration=duration)
+def display_frames_as_gif(frames, gif_name = 'atari/trajectories/playing_space_invaders_random.gif', FPS = 30)
+    """
+    INPUT: Lista de frames del juego
+    OUTPUT: Imageio Gif en la carpeta trajectories
+    """
+    imageio.mimsave(gif_name, frames, fps=FPS)
+    return None

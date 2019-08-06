@@ -12,20 +12,20 @@ def rgb(array):
     gray = 0.2989*r + 0.587*g + 0.114*b
     return gray
 
-def image_to_gray(image, dim = (84, 84), gray_scale = True):
+def scale_color(image, dim = (84, 84), gray_scale = True):
     """
     INPUT: 
-        - image is an observation from an atari game from GYM so it is a numpy.ndarray
-        - dim is a 2d tuple of the rescale
-        - gray_scale is a boolean , default is true
+        - image es una observacion de atari, es decir un numpy ndarray
+        - dim es una 2d tupla con la escala de salida
+        - gray_scale es un bool , default es True
     OUTPUT:
-        -  
+        - numpy ndarray con el color y la escala especificada
     """
-    #assert image.istype(np.ndarray)
+    assert isinstance(image, np.ndarray), 'La imagen no es del tipo correcto!'
     if gray_scale:
         return cv2.cvtColor(cv2.resize(image, dsize = dim), cv2.COLOR_RGB2GRAY)
     else:
         return cv2.resize(image, dsize = dim)
 
 # Ejemplo de como ejecutarlo     
-# plt.imshow(preprocessing(img),cmap = plt.get_cmap('gray'))
+# plt.imshow(scale_color(img),cmap = plt.get_cmap('gray'))
