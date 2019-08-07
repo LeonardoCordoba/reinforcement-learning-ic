@@ -35,8 +35,11 @@ class DDQNNGame:
         
     
     def get_model_copy(self, model):
+        # GAAAASSSS
+        #TODO: chequear que funcione bien
         model_copy= keras.models.clone_model(model)
-        # model_copy.build((None, 10)) # TODO: replace with number of variables in input layer
+        # TODO: replace with number of variables in input layer
+        # model_copy.build((None, 10)) 
         model_copy.compile(optimizer='rmsprop', loss='categorical_crossentropy')
         model_copy.set_weights(model.get_weights())
         return model_copy
@@ -44,10 +47,10 @@ class DDQNNGame:
     def move(self, state):
         if self.train is False:
             if np.random.rand() < self.ddqnn_params["exploration_test"]:
-                return random.randrange(self.env.action_space)
+                return random.randrange(self.env.action_space.n)
         else:
             if np.random.rand() < self.epsilon or len(self.memory) < self.ddqnn_params["replay_start_size"]:
-                return random.randrange(self.env.action_space)
+                return random.randrange(self.env.action_space.n)
         
         q_values = self.base_model.predict(np.expand_dims(np.asarray(state).astype(np.float64), axis=0), batch_size=1)
         return np.argmax(q_values[0])

@@ -64,7 +64,6 @@ params = {"gamma":0.99, "memory_size": 900000, "batch_size": 32,
             "exploration_steps": exploration_steps, 
             "exploration_decay": exploration_decay}
 train = True
-cnn
 
 game_model = DDQNNGame(cnn, env, paths, params, train)
 
@@ -93,6 +92,7 @@ while True:
 
       run += 1
       current_state = env.reset()
+      # TODO: capaz se puede preprocesar aca currect_state y concatenar 4
       step = 0
       score = 0
       while True:
@@ -108,7 +108,7 @@ while True:
             action = game_model.move(current_state)
             next_state, reward, terminal, info = env.step(action)
             if clip:
-                  np.sign(reward)
+                  reward = np.sign(reward)
             score += reward
             game_model.remember(current_state, action, reward, next_state, terminal)
             current_state = next_state
