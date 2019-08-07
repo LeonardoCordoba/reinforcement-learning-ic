@@ -2,7 +2,7 @@ import numpy as np
 import os
 import random
 import shutil
-
+import keras
 
 GAMMA = 0.99
 MEMORY_SIZE = 900000
@@ -21,7 +21,7 @@ EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
 class DDQNNGame:
 
     def __init__(self, base_model, env, paths, ddqnn_params, train):
-        self.base_model = base_model
+        self.base_model = base_model.model
         self.train = train # esto es para indicar si estamos entrenando o testeando
         if self.train:
             self.target_model = self.get_model_copy(self.base_model)
@@ -34,8 +34,11 @@ class DDQNNGame:
         self.memory = []
         
     
-    def get_model_copy(model):
-        # TODO: ver como copiar modelo
+    def get_model_copy(self, model):
+        model_copy= keras.models.clone_model(model)
+        # model_copy.build((None, 10)) # TODO: replace with number of variables in input layer
+        model_copy.compile(optimizer='rmsprop', loss='categorical_crossentropy')
+        model_copy.set_weights(model.get_weights())
         return model_copy
     
     def move(self, state):
@@ -101,7 +104,7 @@ class DDQNNGame:
             if entry["terminal"]:
                 q[entry["action"]] = entry["reward"]
             else:
-                q[entry["action"]] = entry["reward"] + GAMMA * next_q_value
+                q[entry["action"]] = entry["reward"] + self.ddqnn_params["gamma"] * next_q_value
             q_values.append(q)
             max_q_values.append(np.max(q))
 
