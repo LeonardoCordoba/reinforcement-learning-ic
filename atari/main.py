@@ -1,7 +1,13 @@
+# %% Imports
 from keras.optimizers import RMSprop
 import numpy as np
 from atari.model import CNNModel
 from atari.ddql import DDQNNGame
+from atari.preprocessing import scale_color, wrap_deepmind
+import gym
+import random
+import matplotlib.pyplot as plt
+
 
 # REQUIREMENTS:
 # Open AI Gym (pip install gym[all])
@@ -9,20 +15,20 @@ from atari.ddql import DDQNNGame
 # JSAnimation - Only for Jupyter Display
 # ImageIO 
 
-# Instantiate model
+# %% Instantiate model
 cnn = CNNModel()
 
 conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
-          "activation": "relu", "input_shape": (4, 84, 84),
-          "data_format":"channels_first"}
+          "activation": "relu", "input_shape": (84, 84, 4),
+          "data_format":"channels_last"}
 
 conv_2 = {"filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
-          "activation": "relu", "input_shape": (4, 84, 84),
-          "data_format": "channels_first"}
+          "activation": "relu", "input_shape": (84, 84, 4),
+          "data_format": "channels_last"}
 
 conv_3 = {"filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
-          "activation": "relu", "input_shape": (4, 84, 84),
-          "data_format": "channels_first"}
+          "activation": "relu", "input_shape": (84, 84, 4),
+          "data_format": "channels_last"}
 
 dense_1 = {"units": 512, "activation": "relu"}
 
@@ -40,14 +46,14 @@ hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
 cnn.set_model_params(hp)
 
 
-# Play random
-import gym
-import random
-import matplotlib.pyplot as plt
-#import cv2
+# %% Setup
 
 env = gym.make('SpaceInvaders-v0')
-paths = {"model":"model/model.h5"}
+env = wrap_deepmind(env, frame_stack=True)
+
+
+
+paths = {"model":"/home/usuario/Documentos/github/reinforcement-learning-ic/atari/model/model.h5"}
 
 exploration_max = 1.0
 exploration_min = 0.1
@@ -85,6 +91,7 @@ total_step = 0
 # Supongo que habria que preprocesar los frames para resolverlo
 # El error esta en la linea 101 de ddql --> 101             next_state_prediction = self.target_model.predict(next_state).ravel()
 
+# %% Main loop
 while True:
       if total_run_limit is not None and run >= total_run_limit:
             # print "Reached total run limit of: " + str(total_run_limit)
@@ -92,6 +99,7 @@ while True:
 
       run += 1
       current_state = env.reset()
+      # current_state = scale_color(current_state)
       # TODO: capaz se puede preprocesar aca currect_state y concatenar 4
       step = 0
       score = 0
@@ -107,6 +115,8 @@ while True:
 
             action = game_model.move(current_state)
             next_state, reward, terminal, info = env.step(action)
+            # next_state = scale_color(next_state)
+
             if clip:
                   reward = np.sign(reward)
             score += reward
@@ -119,3 +129,5 @@ while True:
                   # game_model.save_run(score, step, run)
                   print(score)
                   break
+
+#%%
