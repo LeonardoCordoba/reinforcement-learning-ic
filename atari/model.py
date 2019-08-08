@@ -75,7 +75,7 @@ class CNNModel:
         return self.model.summary()
 
 
-cnn = CNNModel()
+"""cnn = CNNModel()
 
 conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
           "activation": "relu", "input_shape": (4, 84, 84),
@@ -101,4 +101,4 @@ compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
 hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
       "compiler": compiler}
 
-cnn.set_model_params(hp)
+cnn.set_model_params(hp)"""

@@ -8,8 +8,19 @@ import gym
 import random
 import matplotlib.pyplot as plt
 
+# %% Set env
+WRAPPER = "AP" 
+env = gym.make('SpaceInvaders-v0')
 
-# REQUIREMENTS:
+if WRAPPER == "DM":
+      env = wrap_deepmind(env, frame_stack=True)
+      INPUT_SHAPE = (84, 84, 4)
+else:
+      from gym.wrappers import AtariPreprocessing
+      env = AtariPreprocessing(env)
+      INPUT_SHAPE = (84, 84, 1)
+
+# requirements:
 # Open AI Gym (pip install gym[all])
 # OpenCV
 # JSAnimation - Only for Jupyter Display
@@ -19,15 +30,15 @@ import matplotlib.pyplot as plt
 cnn = CNNModel()
 
 conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
-          "activation": "relu", "input_shape": (84, 84, 4),
+          "activation": "relu", "input_shape": INPUT_SHAPE,
           "data_format":"channels_last"}
 
 conv_2 = {"filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
-          "activation": "relu", "input_shape": (84, 84, 4),
+          "activation": "relu", "input_shape": INPUT_SHAPE,
           "data_format": "channels_last"}
 
 conv_3 = {"filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
-          "activation": "relu", "input_shape": (84, 84, 4),
+          "activation": "relu", "input_shape": INPUT_SHAPE,
           "data_format": "channels_last"}
 
 dense_1 = {"units": 512, "activation": "relu"}
@@ -47,10 +58,6 @@ cnn.set_model_params(hp)
 
 
 # %% Setup
-
-env = gym.make('SpaceInvaders-v0')
-env = wrap_deepmind(env, frame_stack=True)
-
 
 
 paths = {"model":"/home/usuario/Documentos/github/reinforcement-learning-ic/atari/model/model.h5"}
@@ -92,6 +99,8 @@ while True:
 
       run += 1
       current_state = env.reset()
+      if WRAPPER != "DM":
+            current_state = np.reshape(current_state, (84, 84, 1))
 
       step = 0
       score = 0
@@ -107,6 +116,9 @@ while True:
 
             action = game_model.move(current_state)
             next_state, reward, terminal, info = env.step(action)
+            if WRAPPER != "DM":
+                next_state = np.reshape(next_state, (84, 84, 1))
+
             # next_state = scale_color(next_state)
 
             if clip:
@@ -123,3 +135,5 @@ while True:
                   break
 
 #%%
+plt.imshow(env._get_obs())
+env.unwrapped.action_space
