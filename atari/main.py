@@ -84,13 +84,6 @@ clip = True
 run = 0
 total_step = 0
 
-# GAS!! Si corres lo que sigue parece que va bien hasta que da el siguiente error:
-# ValueError: Error when checking input: expected conv2d_4_input to have shape (4, 84, 84) but got array with shape (210, 160, 3) 
-
-# Entiendo que es porque lo que se trata de pasar es un frame a color, en rgb, por eso el 3 en (210, 160, 3)
-# Supongo que habria que preprocesar los frames para resolverlo
-# El error esta en la linea 101 de ddql --> 101             next_state_prediction = self.target_model.predict(next_state).ravel()
-
 # %% Main loop
 while True:
       if total_run_limit is not None and run >= total_run_limit:
@@ -99,8 +92,7 @@ while True:
 
       run += 1
       current_state = env.reset()
-      # current_state = scale_color(current_state)
-      # TODO: capaz se puede preprocesar aca currect_state y concatenar 4
+
       step = 0
       score = 0
       while True:
