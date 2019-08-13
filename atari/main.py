@@ -1,7 +1,7 @@
 # %% Imports
 from keras.optimizers import RMSprop
 import numpy as np
-from atari.model import CNNModel
+from atari.model import get_predefined_model
 from atari.ddql import DDQNNGame
 from atari.preprocessing import scale_color, wrap_deepmind
 import gym
@@ -9,7 +9,7 @@ import random
 import matplotlib.pyplot as plt
 
 # %% Set env
-WRAPPER = "AP" 
+WRAPPER = "DM" 
 env = gym.make('SpaceInvaders-v0')
 
 if WRAPPER == "DM":
@@ -27,35 +27,8 @@ else:
 # ImageIO 
 
 # %% Instantiate model
-cnn = CNNModel()
 
-conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
-          "activation": "relu", "input_shape": INPUT_SHAPE,
-          "data_format":"channels_last"}
-
-conv_2 = {"filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
-          "activation": "relu", "input_shape": INPUT_SHAPE,
-          "data_format": "channels_last"}
-
-conv_3 = {"filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
-          "activation": "relu", "input_shape": INPUT_SHAPE,
-          "data_format": "channels_last"}
-
-dense_1 = {"units": 512, "activation": "relu"}
-
-dense_2 = {"units": 6}
-
-compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
-                                                               rho=0.95,
-                                                               epsilon=0.01),
-            "metrics": ["accuracy"]}
-
-hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
-      "compiler": compiler}
-
-
-cnn.set_model_params(hp)
-
+cnn = get_predefined_model("little_a", INPUT_SHAPE)
 
 # %% Setup
 

@@ -74,31 +74,58 @@ class CNNModel:
 
         return self.model.summary()
 
+def get_predefined_model(model_name, input_shape):
+    if model_name == "original":
+        model = CNNModel()
 
-"""cnn = CNNModel()
+        conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
+                  "activation": "relu", "input_shape": input_shape,
+                  "data_format":"channels_last"}
 
-conv_1 = {"filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
-          "activation": "relu", "input_shape": (4, 84, 84),
-          "data_format":"channels_first"}
+        conv_2 = {"filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
+                  "activation": "relu", "input_shape": input_shape,
+                  "data_format": "channels_last"}
 
-conv_2 = {"filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
-          "activation": "relu", "input_shape": (4, 84, 84),
-          "data_format": "channels_first"}
+        conv_3 = {"filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
+                  "activation": "relu", "input_shape": input_shape,
+                  "data_format": "channels_last"}
 
-conv_3 = {"filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
-          "activation": "relu", "input_shape": (4, 84, 84),
-          "data_format": "channels_first"}
+        dense_1 = {"units": 512, "activation": "relu"}
 
-dense_1 = {"units": 512, "activation": "relu"}
+        dense_2 = {"units": 6}
 
-dense_2 = {"units": 6}
+        compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
+                                                                       rho=0.95,
+                                                                       epsilon=0.01),
+                    "metrics": ["accuracy"]}
 
-compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
-                                                               rho=0.95,
-                                                               epsilon=0.01),
-            "metrics": ["accuracy"]}
+        hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
+              "compiler": compiler}
 
-hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
-      "compiler": compiler}
+        model.set_model_params(hp)
+    elif model_name == "little_a":
+        model = CNNModel()
 
-cnn.set_model_params(hp)"""
+        conv_1 = {"filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format":"channels_last"}
+
+        conv_2 = {"filters": 32, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format": "channels_last"}
+
+        dense_1 = {"units": 128, "activation": "relu"}
+
+        dense_2 = {"units": 6}
+
+        compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
+                                                                    rho=0.95,
+                                                                    epsilon=0.01),
+                    "metrics": ["accuracy"]}
+
+        hp = {"cnn": [conv_1, conv_2], "dense": [dense_1, dense_2],
+            "compiler": compiler}
+
+        model.set_model_params(hp)
+    
+    return model
