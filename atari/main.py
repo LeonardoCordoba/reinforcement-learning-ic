@@ -27,7 +27,7 @@ else:
 # ImageIO 
 
 # %% Instantiate model
-
+# little_a
 cnn = get_predefined_model("little_a", INPUT_SHAPE)
 
 # %% Setup
