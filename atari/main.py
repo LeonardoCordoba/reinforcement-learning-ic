@@ -7,10 +7,12 @@ from atari.preprocessing import scale_color, wrap_deepmind
 import gym
 import random
 import matplotlib.pyplot as plt
+import os
 
 # %% Set env
 WRAPPER = "DM" 
 env = gym.make('SpaceInvaders-v0')
+path = os.getcwd()
 
 if WRAPPER == "DM":
       env = wrap_deepmind(env, frame_stack=True)
@@ -32,8 +34,9 @@ cnn = get_predefined_model("little_a", INPUT_SHAPE)
 
 # %% Setup
 
-
-paths = {"model":"/home/usuario/Documentos/github/reinforcement-learning-ic/atari/model/model.h5"}
+# /home/usuario/Documentos/github/reinforcement-learning-ic/
+paths = {"model":path+"/atari/model/model.h5"}
+assert os.path.isdir(path+"/atari/model/"), "Corregir el path del modelo" 
 
 exploration_max = 1.0
 exploration_min = 0.1
@@ -54,11 +57,11 @@ train = True
 game_model = DDQNNGame(cnn, env, paths, params, train)
 
 env.reset()
-frameshistory=[]
-done=False
+frameshistory = []
+done = False
 total_step_limit = 10000
 total_run_limit = 10
-render = True
+render = False #True
 clip = True
 
 run = 0
@@ -67,7 +70,7 @@ total_step = 0
 # %% Main loop
 while True:
       if total_run_limit is not None and run >= total_run_limit:
-            # print "Reached total run limit of: " + str(total_run_limit)
+            print ("Reached total run limit of: " + str(total_run_limit))
             exit(0)
 
       run += 1
@@ -79,7 +82,7 @@ while True:
       score = 0
       while True:
             if total_step >= total_step_limit:
-                  # print "Reached total step limit of: " + str(total_step_limit)
+                  print ("Reached total step limit of: " + str(total_step_limit))
                   exit(0)
             total_step += 1
             step += 1
@@ -107,6 +110,6 @@ while True:
                   print(score)
                   break
 
-#%%
+# %%
 plt.imshow(env._get_obs())
 env.unwrapped.action_space
