@@ -121,3 +121,14 @@ class DDQNNGame:
     
     def _save_model(self):
         self.base_model.save_weights(self.paths["model"])
+
+    def _weigths_snapshot(self):
+        weigths_base = []
+        weigths_target = []
+        for layer_base, layer_target in zip(self.base_model.layers, self.target_model.layers):
+            try:
+                weigths_base.append(layer_base.get_weights()[0].sum())
+                weigths_target.append(layer_target.get_weights()[0].sum())
+            except IndexError:
+                pass
+        return weigths_base, weigths_target
