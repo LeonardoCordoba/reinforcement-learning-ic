@@ -20,11 +20,12 @@ EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
 
 class DDQNNGame:
 
-    def __init__(self, base_model, env, paths, ddqnn_params, train):
+    def __init__(self, base_model, copy_model, env, paths, ddqnn_params, train):
         self.base_model = base_model.model
         self.train = train # esto es para indicar si estamos entrenando o testeando
         if self.train:
-            self.target_model = self.get_model_copy(self.base_model)
+            # self.target_model = self.get_model_copy(self.base_model)
+            self.target_model = copy_model.model
         self.env = env
         self.paths = paths
         self.ddqnn_params = ddqnn_params
