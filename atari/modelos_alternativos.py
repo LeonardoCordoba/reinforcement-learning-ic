@@ -118,7 +118,7 @@ hp = {"layers": [conv_1, maxpool_1, conv_2, flatten, dense_1, dense_2],
         "compiler": compiler}
 model.set_model_params(hp, input_shape)
 
-# 3) Modelo intermedio B: 820,368
+# 4) Modelo intermedio B: 820,368
 model = CNNModel()
 
 conv_1 = {"type": "cnn",

@@ -113,9 +113,10 @@ class CNNModel:
         return self.model.summary()
 
 def get_predefined_model(model_name, input_shape):
-    if model_name == "original":
-        model = CNNModel()
 
+    model = CNNModel()
+
+    if model_name == "original":
         conv_1 = {"type": "cnn",
                   "filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
                   "activation": "relu", "input_shape": input_shape,
@@ -142,15 +143,11 @@ def get_predefined_model(model_name, input_shape):
                                                                        epsilon=0.01),
                     "metrics": ["accuracy"]}
 
-        #hp = {"cnn": [conv_1, conv_2, conv_3], "dense": [dense_1, dense_2],
-        #      "compiler": compiler}
         flatten = {"type": "flatten"}
         hp = {"layers": [conv_1,conv_2,conv_3,flatten,dense_1,dense_2],
                 "compiler": compiler} 
-        model.set_model_params(hp, input_shape)
 
     elif model_name == "little_a":
-        model = CNNModel()
 
         conv_1 = {"type": "cnn",
                 "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
@@ -180,7 +177,98 @@ def get_predefined_model(model_name, input_shape):
         #    "compiler": compiler}
         hp = {"layers": [conv_1, conv_2, maxpool_1, flatten, dense_1, dense_2], 
                 "compiler": compiler}
-        
-        model.set_model_params(hp, input_shape)
-    
+
+    elif model_name == "300k":
+        #1) Modelo muy chiquito: 337,584
+        conv_1 = {"type": "cnn",
+                "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format":"channels_last"}
+        maxpool_1 = {"type": "maxpool",
+                "pool_size": (2,2), "strides": None, "padding": "valid",
+                "data_format": "channels_last"}
+        conv_2 = {"type": "cnn",
+                "filters": 32, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format": "channels_last"}
+        maxpool_2 = {"type": "maxpool",
+                "pool_size": (2,2), "strides": None, "padding": "valid",
+                "data_format": "channels_last"}
+        dense_1 = {"type": "dense", "units": 128, "activation": "relu"}
+        dense_2 = {"type": "dense","units": 6}
+        compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
+                                                                    rho=0.95,
+                                                                    epsilon=0.01),
+                    "metrics": ["accuracy"]}
+        flatten = {"type": "flatten"}
+        hp = {"layers": [conv_1, maxpool_1, conv_2, maxpool_2, flatten, dense_1, dense_2], 
+                "compiler": compiler}
+
+    elif model_name == "100k":
+        # Modelo aún más chiquito: 98,032
+        conv_1 = {"type": "cnn",
+                    "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
+                    "activation": "relu", "input_shape": input_shape,
+                    "data_format":"channels_last"}
+
+        maxpool_1 = {"type": "maxpool",
+                "pool_size": (2,2), "strides": None, "padding": "valid",
+                "data_format": "channels_last"}
+
+        conv_2 = {"type": "cnn",
+                "filters": 32, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format": "channels_last"}
+
+        maxpool_2 = {"type": "maxpool",
+                "pool_size": (2,2), "strides": None, "padding": "valid",
+                "data_format": "channels_last"}
+
+        conv_3 = {"type": "cnn",
+                "filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format": "channels_last"}
+
+        maxpool_3 = {"type": "maxpool",
+                "pool_size": (2,2), "strides": None, "padding": "valid",
+                "data_format": "channels_last"}
+
+        dense_1 = {"type": "dense", "units": 128, "activation": "relu"}
+
+        dense_2 = {"type": "dense","units": 6}
+
+        compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
+                                                                    rho=0.95,
+                                                                    epsilon=0.01),
+                    "metrics": ["accuracy"]}
+
+        flatten = {"type": "flatten"}
+        hp = {"layers": [conv_1, maxpool_1, conv_2, maxpool_2, conv_3, maxpool_3, flatten, dense_1, dense_2], 
+                "compiler": compiler}
+
+    elif model_name == "800k":
+        # Modelo intermedio B: 820,368
+        conv_1 = {"type": "cnn",
+                "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
+                "activation": "relu", "input_shape": input_shape,
+                "data_format":"channels_last"}
+
+        maxpool_1 = {"type": "maxpool",
+                "pool_size": (2,2), "strides": None, "padding": "valid",
+                "data_format": "channels_last"}
+
+        dense_1 = {"type": "dense", "units": 128, "activation": "relu"}
+
+        dense_2 = {"type": "dense","units": 6}
+
+        compiler = {"loss": "mean_squared_error", "optimizer": RMSprop(lr=0.00025,
+                                                                    rho=0.95,
+                                                                    epsilon=0.01),
+                    "metrics": ["accuracy"]}
+
+        flatten = {"type": "flatten"}
+        hp = {"layers": [conv_1, maxpool_1, flatten, dense_1, dense_2], 
+                "compiler": compiler}
+
+    model.set_model_params(hp, input_shape)    
     return model

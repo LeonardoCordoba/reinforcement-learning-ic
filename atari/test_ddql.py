@@ -68,6 +68,7 @@ exploration_steps = 850000
 exploration_decay = (exploration_max-exploration_min)/exploration_steps
 
 
+
 params = {"gamma":0.99, "memory_size": 900000, "batch_size": 16,
             "training_frequency": 4, "target_network_update_frequency": 40000,
             "model_persistence_update_frequency": 10000,
@@ -92,6 +93,7 @@ game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
 env.reset()
 frameshistory = []
 done = False
+model_save_freq = 1000
 total_step_limit = 100000
 total_run_limit = 200
 render = False #True
@@ -99,6 +101,7 @@ clip = True
 
 run = 0
 total_step = 0
+saves = 0
 
 
 #%%
@@ -125,6 +128,11 @@ while exit == 0:
 
         if render:
             env.render()
+
+        if total_step % model_save_freq == 0:
+            # Cada model_save_freq de pasos totales guardo los pesos del modelo
+            game_model.save_model(path + "/model/model_freq_{}_copy_{}.h5".format(model_save_freq, saves))
+            saves += 1
 
         action = game_model.move(current_state)
         next_state, reward, terminal, info = env.step(action)
