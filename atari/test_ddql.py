@@ -69,18 +69,18 @@ exploration_decay = (exploration_max-exploration_min)/exploration_steps
 
 
 
-params = {"gamma":0.99, "memory_size": 900000, "batch_size": 16,
+params = {"gamma":0.99, "memory_size": 900000, "batch_size": 32,
             "training_frequency": 4, "target_network_update_frequency": 40000,
             "model_persistence_update_frequency": 10000,
-            "replay_start_size": 500 ,"exploration_test": 0.02,
+            "replay_start_size": 5000 ,"exploration_test": 0.02,
             "exploration_max": exploration_max, 
             "exploration_min": exploration_min,
             "exploration_steps": exploration_steps, 
             "exploration_decay": exploration_decay}
 
 # Para poder estudiar si se estaba entrenando tuve que cambiar dos parametros
-# batch_size lo baje de 32 a 16
-# replay_start_size lo baje de 50000 a 500
+# batch_size lo baje de 32 a 16 - vuelve a 32
+# replay_start_size lo baje de 50000 a 500 - lo paso a 5000
 # Ademas cambio y agregue muchos mas episodios y corridas
 
 train = True
@@ -93,9 +93,9 @@ game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
 env.reset()
 frameshistory = []
 done = False
-model_save_freq = 1000
-total_step_limit = 100000
-total_run_limit = 200
+model_save_freq = 50000
+total_step_limit = 1000000
+total_run_limit = 500
 render = False #True
 clip = True
 
@@ -106,9 +106,11 @@ saves = 0
 
 #%%
 # %% Main loop
+import time
 exit = 0
 print("Partida número: ", run)
 print(game_model._weigths_snapshot())
+start = time.time()
 while exit == 0:
     
     run += 1
@@ -122,6 +124,7 @@ while exit == 0:
         if total_step >= total_step_limit:
             print ("Reached total step limit of: " + str(total_step_limit))
             # No sería mejor un break?
+            print("Tiempo transcurrido de corrida {}".format(time.time()-start))
             exit = 1
         total_step += 1
         step += 1
@@ -152,18 +155,20 @@ while exit == 0:
 
         if terminal:
             # game_model.save_run(score, step, run)
-            if run % 10 == 0:
+            if run % 50 == 0:
                 weights_snap = game_model._weigths_snapshot()
                 print("Partida número: ", run)
                 print("Pesos modelo base: ", weights_snap[0])
-                print("Pesos modelo base: ", weights_snap[1])
+                print("Pesos modelo copia: ", weights_snap[1])
                 print(score)
+                print("Tiempo transcurrido de corrida {}".format(time.time()-start))
             game_model._save_model()
             break
            
     # Corto por episodios
     if total_run_limit is not None and run >= total_run_limit:
         print ("Reached total run limit of: " + str(total_run_limit))
+        print("Tiempo transcurrido de corrida {}".format(time.time()-start))
         exit = 1
         
 
