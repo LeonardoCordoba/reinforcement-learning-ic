@@ -116,7 +116,7 @@ def get_predefined_model(model_name, input_shape):
 
     model = CNNModel()
 
-    if model_name == "original":
+    if model_name == "full":
         conv_1 = {"type": "cnn",
                   "filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
                   "activation": "relu", "input_shape": input_shape,
@@ -147,8 +147,8 @@ def get_predefined_model(model_name, input_shape):
         hp = {"layers": [conv_1,conv_2,conv_3,flatten,dense_1,dense_2],
                 "compiler": compiler} 
 
-    elif model_name == "little_a":
-
+    elif model_name == "1,5M":
+        # Intermedio: 1.484.464
         conv_1 = {"type": "cnn",
                 "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
                 "activation": "relu", "input_shape": input_shape,
@@ -173,8 +173,6 @@ def get_predefined_model(model_name, input_shape):
                     "metrics": ["accuracy"]}
         flatten = {"type": "flatten"}
 
-        #hp = {"cnn": [conv_1, conv_2], "dense": [dense_1, dense_2],
-        #    "compiler": compiler}
         hp = {"layers": [conv_1, conv_2, maxpool_1, flatten, dense_1, dense_2], 
                 "compiler": compiler}
 

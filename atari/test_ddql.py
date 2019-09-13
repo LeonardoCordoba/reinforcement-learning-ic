@@ -45,10 +45,10 @@ else:
 
 #%%
 # %% Instantiate model
-# little_a
-
-cnn = get_predefined_model("little_a", INPUT_SHAPE)
-cnn_2 = get_predefined_model("little_a", INPUT_SHAPE)
+# ["full", "1,5M", "800k", "300k", "100k"]
+MODEL_NAME = "full"
+cnn = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
+cnn_2 = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 
 
 #%%
@@ -57,7 +57,7 @@ cnn_2 = get_predefined_model("little_a", INPUT_SHAPE)
 # /home/usuario/Documentos/github/reinforcement-learning-ic/
 # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 path = os.getcwd()
-paths = {"model":path+"/model/model.h5"}
+paths = {"model":path+"/model/model{}.h5".format(MODEL_NAME)}
 #assert os.path.isdir(path+"/atari/model/"), "Corregir el path del modelo" 
 
 
@@ -134,7 +134,7 @@ while exit == 0:
 
         if total_step % model_save_freq == 0:
             # Cada model_save_freq de pasos totales guardo los pesos del modelo
-            game_model.save_model(path + "/model/model_freq_{}_copy_{}.h5".format(model_save_freq, saves))
+            game_model.save_model(path + "/model/model{}_freq{}K_run{}M_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,saves))
             saves += 1
 
         action = game_model.move(current_state)
@@ -174,11 +174,11 @@ while exit == 0:
 
 
 #%%
-get_ipython().run_line_magic('load_ext', 'tensorboard')
+#get_ipython().run_line_magic('load_ext', 'tensorboard')
 
 
 #%%
-get_ipython().run_line_magic('tensorboard', '--logdir logs')
+#get_ipython().run_line_magic('tensorboard', '--logdir logs')
 
 
 #%%
