@@ -1,5 +1,6 @@
 from atari.model import CNNModel, get_predefined_model
 from keras.optimizers import RMSprop, Adam
+import json
 
 input_shape = (84, 84, 4)
 # Modelos actuales
@@ -42,6 +43,11 @@ flatten = {"type": "flatten"}
 hp = {"layers": [conv_1, maxpool_1, conv_2, maxpool_2, flatten, dense_1, dense_2], 
         "compiler": compiler}
 model.set_model_params(hp, input_shape)
+
+model_json = model.model.to_json()
+with open("atari/model/json/300k.json", "w") as json_file:
+        json.dump(model_json, json_file)
+
 
 # Modelo aún más chiquito: 98,032
 model = CNNModel()
@@ -118,6 +124,7 @@ hp = {"layers": [conv_1, maxpool_1, conv_2, flatten, dense_1, dense_2],
         "compiler": compiler}
 model.set_model_params(hp, input_shape)
 
+
 # 4) Modelo intermedio B: 820,368
 model = CNNModel()
 
@@ -143,3 +150,7 @@ flatten = {"type": "flatten"}
 hp = {"layers": [conv_1, maxpool_1, flatten, dense_1, dense_2], 
         "compiler": compiler}
 model.set_model_params(hp, input_shape)
+
+model_json = model.model.to_json()
+# with open("atari/model/json/800k.json", "w") as json_file:
+#     json.dump(model_json, json_file)

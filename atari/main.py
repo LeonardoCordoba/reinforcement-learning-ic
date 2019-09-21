@@ -1,13 +1,27 @@
-# %% Imports
+#%% Change working directory from the workspace root to the ipynb file location. Turn this addition off with the DataScience.changeDirOnImportExport setting
+# ms-python.python added
+import os
+try:
+	os.chdir(os.path.join(os.getcwd(), 'atari'))
+	print(os.getcwd())
+except:
+	pass
+
+#%%
 from keras.optimizers import RMSprop
+import keras
+from keras.models import load_model
 import numpy as np
-from atari.model import get_predefined_model
-from atari.ddql import DDQNNGame
-from atari.preprocessing import scale_color, wrap_deepmind
+from model import get_predefined_model
+from ddql import DDQNNGame
+from preprocessing import scale_color, wrap_deepmind
 import gym
 import random
 import matplotlib.pyplot as plt
 import os
+import tensorflow as tf
+from keras.models import model_from_json
+import json
 
 # %% Set env
 WRAPPER = "DM" 
@@ -15,101 +29,34 @@ env = gym.make('SpaceInvaders-v0')
 path = os.getcwd()
 
 if WRAPPER == "DM":
-      env = wrap_deepmind(env, frame_stack=True)
-      INPUT_SHAPE = (84, 84, 4)
+    env = wrap_deepmind(env, frame_stack=True)
+    INPUT_SHAPE = (84, 84, 4)
 else:
-      from gym.wrappers import AtariPreprocessing
-      env = AtariPreprocessing(env)
-      INPUT_SHAPE = (84, 84, 1)
-
-# requirements:
-# Open AI Gym (pip install gym[all])
-# OpenCV
-# JSAnimation - Only for Jupyter Display
-# ImageIO 
+    from gym.wrappers import AtariPreprocessing
+    env = AtariPreprocessing(env)
+    INPUT_SHAPE = (84, 84, 1)
 
 # %% Instantiate model
-# little_a
-cnn = get_predefined_model("little_a", INPUT_SHAPE)
+# ["full", "1,5M", "800k", "300k", "100k"]
+MODEL_NAME = "800k"
+
+with open('model/json/' + MODEL_NAME + '.json','r') as f:
+    model_json = json.load(f)
+
+model = model_from_json(model_json)
+model.load_weights("model/800k_1/model800k.h5")
 
 # %% Setup
-
-# /home/usuario/Documentos/github/reinforcement-learning-ic/
-paths = {"model":path+"/atari/model/model.h5"}
-assert os.path.isdir(path+"/atari/model/"), "Corregir el path del modelo" 
-
-exploration_max = 1.0
-exploration_min = 0.1
-exploration_steps = 850000
-exploration_decay = (exploration_max-exploration_min)/exploration_steps
+path = os.getcwd()
 
 
-params = {"gamma":0.99, "memory_size": 900000, "batch_size": 32,
-            "training_frequency": 4, "target_network_update_frequency": 40000,
-            "model_persistence_update_frequency": 10000,
-            "replay_start_size": 50000 ,"exploration_test": 0.02,
-            "exploration_max": exploration_max, 
-            "exploration_min": exploration_min,
-            "exploration_steps": exploration_steps, 
-            "exploration_decay": exploration_decay}
-train = True
+train = False
+paths = {}
+params = {"exploration_test":0.005}
+game_model = DDQNNGame(model, model, env, paths, params, train)
+game_model.play(env=env, model_save_freq=0, save=False, saving_path="",
+                  total_step_limit=1000000, total_run_limit=1000, render=False,
+                  clip=True, wrapper=WRAPPER, model_name="800k")
 
-game_model = DDQNNGame(cnn, env, paths, params, train)
 
-env.reset()
-frameshistory = []
-done = False
-total_step_limit = 10000
-total_run_limit = 10
-render = False #True
-clip = True
-
-run = 0
-total_step = 0
-
-# %% Main loop
-while True:
-      if total_run_limit is not None and run >= total_run_limit:
-            print ("Reached total run limit of: " + str(total_run_limit))
-            exit(0)
-
-      run += 1
-      current_state = env.reset()
-      if WRAPPER != "DM":
-            current_state = np.reshape(current_state, (84, 84, 1))
-
-      step = 0
-      score = 0
-      while True:
-            if total_step >= total_step_limit:
-                  print ("Reached total step limit of: " + str(total_step_limit))
-                  exit(0)
-            total_step += 1
-            step += 1
-
-            if render:
-                  env.render()
-
-            action = game_model.move(current_state)
-            next_state, reward, terminal, info = env.step(action)
-            if WRAPPER != "DM":
-                next_state = np.reshape(next_state, (84, 84, 1))
-
-            # next_state = scale_color(next_state)
-
-            if clip:
-                  reward = np.sign(reward)
-            score += reward
-            game_model.remember(current_state, action, reward, next_state, terminal)
-            current_state = next_state
-
-            game_model.step_update(total_step)
-
-            if terminal:
-                  # game_model.save_run(score, step, run)
-                  print(score)
-                  break
-
-# %%
-plt.imshow(env._get_obs())
-env.unwrapped.action_space
+#%%

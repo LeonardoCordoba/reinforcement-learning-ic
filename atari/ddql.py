@@ -3,35 +3,37 @@ import os
 import random
 import shutil
 import keras
+import time
 
-GAMMA = 0.99
-MEMORY_SIZE = 900000
-BATCH_SIZE = 32
-TRAINING_FREQUENCY = 4
-TARGET_NETWORK_UPDATE_FREQUENCY = 40000
-MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-REPLAY_START_SIZE = 50000
+# GAMMA = 0.99
+# MEMORY_SIZE = 900000
+# BATCH_SIZE = 32
+# TRAINING_FREQUENCY = 4
+# TARGET_NETWORK_UPDATE_FREQUENCY = 40000
+# MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
+# REPLAY_START_SIZE = 50000
 
-EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.1
-EXPLORATION_TEST = 0.02
-EXPLORATION_STEPS = 850000
-EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
+# EXPLORATION_MAX = 1.0
+# EXPLORATION_MIN = 0.1
+# EXPLORATION_TEST = 0.02
+# EXPLORATION_STEPS = 850000
+# EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
 
 class DDQNNGame:
 
     def __init__(self, base_model, copy_model, env, paths, ddqnn_params, train):
         self.base_model = base_model.model
-        self.train = train # esto es para indicar si estamos entrenando o testeando
+        self.train = train
         if self.train:
-            # self.target_model = self.get_model_copy(self.base_model)
             self.target_model = copy_model.model
         self.env = env
         self.paths = paths
         self.ddqnn_params = ddqnn_params
         if self.train:
             self._reset_target_network()
-        self.epsilon = self.ddqnn_params["exploration_max"]
+            self.epsilon = self.ddqnn_params["exploration_max"]
+        else:
+            assert "exploration_test" in ddqnn_params.keys()
         self.memory = []
         
     
@@ -137,4 +139,86 @@ class DDQNNGame:
                 pass
         return weigths_base, weigths_target
     
-    
+    def play(self, env, save, saving_path, model_save_freq, total_step_limit,
+                total_run_limit, render, clip, wrapper, model_name):
+
+        exit = 0
+        env.reset()
+        frameshistory = []
+        done = False
+        run = 0
+        total_step = 0
+        saves = 0
+        start = time.time()
+
+        while exit == 0:
+            run += 1
+            current_state = env.reset()
+            if wrapper != "DM":
+                current_state = np.reshape(current_state, (84, 84, 1))
+            step = 0
+            score = 0
+            while exit == 0:
+                if total_step >= total_step_limit:
+                    print ("Reached total step limit of: " + str(total_step_limit))
+                    # No sería mejor un break?
+                    print("Tiempo transcurrido de corrida {}".format(time.time()-start))
+                    exit = 1
+            
+                total_step += 1
+                step += 1
+
+                if render:
+                    env.render()
+                    
+                if save:
+                    if total_step % model_save_freq == 0:
+                        # Cada model_save_freq de pasos totales guardo los pesos del modelo
+                        
+                            full_saving_path = saving_path + \
+                                "/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(
+                                    model_name, model_save_freq/1000, 
+                                    total_step_limit/1000000,total_run_limit/1000, 
+                                    saves)
+                            self.save_model(full_saving_path)
+                            saves += 1
+
+                action = self.move(current_state)
+                next_state, reward, terminal, info = env.step(action)
+                if wrapper != "DM":
+                    next_state = np.reshape(next_state, (84, 84, 1))
+
+                # next_state = scale_color(next_state)
+
+                if clip:
+                    reward = np.sign(reward)
+                score += reward
+                
+                if self.train:
+                    self.remember(current_state, action, reward, next_state, terminal)
+
+                current_state = next_state
+
+                if self.train:
+                    self.step_update(total_step)
+
+                if terminal:
+                    # game_model.save_run(score, step, run)
+                    if run % 50 == 0:
+                        weights_snap = self._weigths_snapshot()
+                        # print("Partida número: ", run)
+                        # print("Pesos modelo base: ", weights_snap[0])
+                        # print("Pesos modelo copia: ", weights_snap[1])
+                        # print(score)
+                        # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
+                    if save:
+                        self._save_model()
+                    break
+                
+            # Corto por episodios
+            if total_run_limit is not None and run >= total_run_limit:
+                # print ("Reached total run limit of: " + str(total_run_limit))
+                # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
+                exit = 1
+                
+        final = time.time()
