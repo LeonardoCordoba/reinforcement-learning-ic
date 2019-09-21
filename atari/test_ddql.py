@@ -46,7 +46,7 @@ else:
 #%%
 # %% Instantiate model
 # ["full", "1,5M", "800k", "300k", "100k"]
-MODEL_NAME = "full"
+MODEL_NAME = "800k"
 cnn = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 cnn_2 = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 
@@ -64,7 +64,7 @@ paths = {"model":path+"/model/model{}.h5".format(MODEL_NAME)}
 #%%
 exploration_max = 1.0
 exploration_min = 0.1
-exploration_steps = 850000
+exploration_steps = 80000 # 800000
 exploration_decay = (exploration_max-exploration_min)/exploration_steps
 
 
@@ -93,9 +93,9 @@ game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
 env.reset()
 frameshistory = []
 done = False
-model_save_freq = 50000
-total_step_limit = 1000000
-total_run_limit = 500
+model_save_freq = 10000 # 50000
+total_step_limit = 1000000 # 10000000
+total_run_limit = 1000 # 5000
 render = False #True
 clip = True
 
@@ -134,7 +134,7 @@ while exit == 0:
 
         if total_step % model_save_freq == 0:
             # Cada model_save_freq de pasos totales guardo los pesos del modelo
-            game_model.save_model(path + "/model/model{}_freq{}K_run{}M_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,saves))
+            game_model.save_model(path + "/model/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,total_run_limit/1000, saves))
             saves += 1
 
         action = game_model.move(current_state)
@@ -171,6 +171,7 @@ while exit == 0:
         print("Tiempo transcurrido de corrida {}".format(time.time()-start))
         exit = 1
         
+final = time.time()
 
 
 #%%
