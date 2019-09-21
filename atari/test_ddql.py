@@ -67,8 +67,6 @@ exploration_min = 0.1
 exploration_steps = 80000 # 800000
 exploration_decay = (exploration_max-exploration_min)/exploration_steps
 
-
-
 params = {"gamma":0.99, "memory_size": 900000, "batch_size": 32,
             "training_frequency": 4, "target_network_update_frequency": 40000,
             "model_persistence_update_frequency": 10000,
@@ -103,6 +101,14 @@ run = 0
 total_step = 0
 saves = 0
 
+# TODO Hacer que el modelo cree una carpeta dentro de models para guardar las distintas versiones o que lo
+# guarde en el nombre del archivo asi como guardamos las versiones de entrenamiento intermedias 
+# TODO Ordenar el codigo
+# TODO TOTHINK Hacer esto en un ejecutable .py o una funcion que guarde logs para análisis 
+# posterior y tome como argumentos el modelo, cantidad de partidas, cantidad de steps, 
+# tiempo de guardado y variables de exploracion 
+# TODO TOTHINK Jugar un poco con las variables de exploracion
+# TODO Terminar las funciones de evaluacion de modelos
 
 #%%
 # %% Main loop
