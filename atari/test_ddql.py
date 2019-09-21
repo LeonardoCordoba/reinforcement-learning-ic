@@ -53,15 +53,26 @@ cnn_2 = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 
 #%%
 # %% Setup
-
-# /home/usuario/Documentos/github/reinforcement-learning-ic/
-# sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 path = os.getcwd()
-paths = {"model":path+"/model/model{}.h5".format(MODEL_NAME)}
-#assert os.path.isdir(path+"/atari/model/"), "Corregir el path del modelo" 
+
+# %% gen path
+
+# GasManija: mover a utils y armar lindo
+def gen_path(path, model_name, exp_num):
+    return os.path.join(path, "model", MODEL_NAME + "_" + str(exp_num))
+
+exp_num = 1
+
+while os.path.exists(gen_path(path, MODEL_NAME, exp_num)):
+    exp_num += 1
+
+saving_path = gen_path(path, MODEL_NAME, exp_num)
+os.mkdir(saving_path)
+
+paths = {"model":saving_path + "/model{}.h5".format(MODEL_NAME)}
 
 
-#%%
+#%% 
 exploration_max = 1.0
 exploration_min = 0.1
 exploration_steps = 80000 # 800000
@@ -140,7 +151,7 @@ while exit == 0:
 
         if total_step % model_save_freq == 0:
             # Cada model_save_freq de pasos totales guardo los pesos del modelo
-            game_model.save_model(path + "/model/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,total_run_limit/1000, saves))
+            game_model.save_model(saving_path + "/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,total_run_limit/1000, saves))
             saves += 1
 
         action = game_model.move(current_state)

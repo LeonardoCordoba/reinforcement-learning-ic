@@ -136,3 +136,5 @@ class DDQNNGame:
             except IndexError:
                 pass
         return weigths_base, weigths_target
+    
+    
