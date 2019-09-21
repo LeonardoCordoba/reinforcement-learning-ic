@@ -37,7 +37,7 @@ class DDQNNGame:
     
     def get_model_copy(self, model):
         # GAAAASSSS
-        #TODO: chequear que funcione bien
+        # TODO: chequear que funcione bien
         model_copy= keras.models.clone_model(model)
         # TODO: replace with number of variables in input layer
         # model_copy.build((None, 10)) 
@@ -122,6 +122,9 @@ class DDQNNGame:
     
     def _save_model(self):
         self.base_model.save_weights(self.paths["model"])
+
+    def save_model(self, path):
+        self.base_model.save_weights(path)
 
     def _weigths_snapshot(self):
         weigths_base = []

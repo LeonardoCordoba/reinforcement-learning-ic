@@ -45,10 +45,10 @@ else:
 
 #%%
 # %% Instantiate model
-# little_a
-
-cnn = get_predefined_model("little_a", INPUT_SHAPE)
-cnn_2 = get_predefined_model("little_a", INPUT_SHAPE)
+# ["full", "1,5M", "800k", "300k", "100k"]
+MODEL_NAME = "800k"
+cnn = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
+cnn_2 = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 
 
 #%%
@@ -57,29 +57,28 @@ cnn_2 = get_predefined_model("little_a", INPUT_SHAPE)
 # /home/usuario/Documentos/github/reinforcement-learning-ic/
 # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 path = os.getcwd()
-paths = {"model":path+"/model/model.h5"}
+paths = {"model":path+"/model/model{}.h5".format(MODEL_NAME)}
 #assert os.path.isdir(path+"/atari/model/"), "Corregir el path del modelo" 
 
 
 #%%
 exploration_max = 1.0
 exploration_min = 0.1
-exploration_steps = 850000
+exploration_steps = 80000 # 800000
 exploration_decay = (exploration_max-exploration_min)/exploration_steps
 
-
-params = {"gamma":0.99, "memory_size": 900000, "batch_size": 16,
+params = {"gamma":0.99, "memory_size": 900000, "batch_size": 32,
             "training_frequency": 4, "target_network_update_frequency": 40000,
             "model_persistence_update_frequency": 10000,
-            "replay_start_size": 500 ,"exploration_test": 0.02,
+            "replay_start_size": 5000 ,"exploration_test": 0.02,
             "exploration_max": exploration_max, 
             "exploration_min": exploration_min,
             "exploration_steps": exploration_steps, 
             "exploration_decay": exploration_decay}
 
 # Para poder estudiar si se estaba entrenando tuve que cambiar dos parametros
-# batch_size lo baje de 32 a 16
-# replay_start_size lo baje de 50000 a 500
+# batch_size lo baje de 32 a 16 - vuelve a 32
+# replay_start_size lo baje de 50000 a 500 - lo paso a 5000
 # Ademas cambio y agregue muchos mas episodios y corridas
 
 train = True
@@ -92,20 +91,32 @@ game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
 env.reset()
 frameshistory = []
 done = False
-total_step_limit = 100000
-total_run_limit = 200
+model_save_freq = 10000 # 50000
+total_step_limit = 1000000 # 10000000
+total_run_limit = 1000 # 5000
 render = False #True
 clip = True
 
 run = 0
 total_step = 0
+saves = 0
 
+# TODO Hacer que el modelo cree una carpeta dentro de models para guardar las distintas versiones o que lo
+# guarde en el nombre del archivo asi como guardamos las versiones de entrenamiento intermedias 
+# TODO Ordenar el codigo
+# TODO TOTHINK Hacer esto en un ejecutable .py o una funcion que guarde logs para análisis 
+# posterior y tome como argumentos el modelo, cantidad de partidas, cantidad de steps, 
+# tiempo de guardado y variables de exploracion 
+# TODO TOTHINK Jugar un poco con las variables de exploracion
+# TODO Terminar las funciones de evaluacion de modelos
 
 #%%
 # %% Main loop
+import time
 exit = 0
 print("Partida número: ", run)
 print(game_model._weigths_snapshot())
+start = time.time()
 while exit == 0:
     
     run += 1
@@ -119,12 +130,18 @@ while exit == 0:
         if total_step >= total_step_limit:
             print ("Reached total step limit of: " + str(total_step_limit))
             # No sería mejor un break?
+            print("Tiempo transcurrido de corrida {}".format(time.time()-start))
             exit = 1
         total_step += 1
         step += 1
 
         if render:
             env.render()
+
+        if total_step % model_save_freq == 0:
+            # Cada model_save_freq de pasos totales guardo los pesos del modelo
+            game_model.save_model(path + "/model/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,total_run_limit/1000, saves))
+            saves += 1
 
         action = game_model.move(current_state)
         next_state, reward, terminal, info = env.step(action)
@@ -144,28 +161,31 @@ while exit == 0:
 
         if terminal:
             # game_model.save_run(score, step, run)
-            if run % 10 == 0:
+            if run % 50 == 0:
                 weights_snap = game_model._weigths_snapshot()
                 print("Partida número: ", run)
                 print("Pesos modelo base: ", weights_snap[0])
-                print("Pesos modelo base: ", weights_snap[1])
+                print("Pesos modelo copia: ", weights_snap[1])
                 print(score)
+                print("Tiempo transcurrido de corrida {}".format(time.time()-start))
             game_model._save_model()
             break
            
     # Corto por episodios
     if total_run_limit is not None and run >= total_run_limit:
         print ("Reached total run limit of: " + str(total_run_limit))
+        print("Tiempo transcurrido de corrida {}".format(time.time()-start))
         exit = 1
         
+final = time.time()
 
 
 #%%
-get_ipython().run_line_magic('load_ext', 'tensorboard')
+#get_ipython().run_line_magic('load_ext', 'tensorboard')
 
 
 #%%
-get_ipython().run_line_magic('tensorboard', '--logdir logs')
+#get_ipython().run_line_magic('tensorboard', '--logdir logs')
 
 
 #%%
