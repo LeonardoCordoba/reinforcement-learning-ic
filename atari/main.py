@@ -54,7 +54,8 @@ train = False
 paths = {}
 params = {"exploration_test":0.005}
 game_model = DDQNNGame(model, model, env, paths, params, train)
-game_model.play(env=env, model_save_freq=0, save=False, saving_path="",
+
+game_model.play(env=env, model_save_freq=0, save=False, saving_path="model/800k_1",
                   total_step_limit=1000000, total_run_limit=1000, render=False,
                   clip=True, wrapper=WRAPPER, model_name="800k")
 

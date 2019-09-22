@@ -4,7 +4,7 @@ import random
 import shutil
 import keras
 import time
-
+import pandas as pd
 # GAMMA = 0.99
 # MEMORY_SIZE = 900000
 # BATCH_SIZE = 32
@@ -150,6 +150,7 @@ class DDQNNGame:
         total_step = 0
         saves = 0
         start = time.time()
+        performance = []
 
         while exit == 0:
             run += 1
@@ -202,19 +203,31 @@ class DDQNNGame:
                 if self.train:
                     self.step_update(total_step)
 
-                if terminal:
-                    # game_model.save_run(score, step, run)
-                    if run % 50 == 0:
-                        weights_snap = self._weigths_snapshot()
-                        # print("Partida número: ", run)
-                        # print("Pesos modelo base: ", weights_snap[0])
-                        # print("Pesos modelo copia: ", weights_snap[1])
-                        # print(score)
-                        # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
-                    if save:
-                        self._save_model()
-                    break
-                
+                    if terminal:
+                        performance.append({"run":run,
+                                            "step":step,
+                                            "score":score})
+                        pd.DataFrame(performance).to_csv(saving_path + "/performance.csv", index=False)
+
+                        # game_model.save_run(score, step, run)
+                        if run % 50 == 0:
+                            weights_snap = self._weigths_snapshot()
+                            # print("Partida número: ", run)
+                            # print("Pesos modelo base: ", weights_snap[0])
+                            # print("Pesos modelo copia: ", weights_snap[1])
+                            # print(score)
+                            # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
+                        if save:
+                            self._save_model()
+                        break
+                else:
+                    if terminal:
+                        performance.append({"run":run,
+                                            "total_step":total_step,
+                                            "score":score})
+                        pd.DataFrame(performance).to_csv(saving_path + "/performance.csv", index=False)
+                        break
+
             # Corto por episodios
             if total_run_limit is not None and run >= total_run_limit:
                 # print ("Reached total run limit of: " + str(total_run_limit))
