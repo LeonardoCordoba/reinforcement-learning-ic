@@ -208,12 +208,14 @@ class DDQNNGame:
 
                         # game_model.save_run(score, step, run)
                         if run % 50 == 0:
-                            weights_snap = self._weigths_snapshot()
+                            # TODO aca podemos mas adelante agregar un log
+                            # weights_snap = self._weigths_snapshot()
                             # print("Partida número: ", run)
                             # print("Pesos modelo base: ", weights_snap[0])
                             # print("Pesos modelo copia: ", weights_snap[1])
                             # print(score)
                             # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
+                            pass
                         if save:
                             self._save_model()
                         break
