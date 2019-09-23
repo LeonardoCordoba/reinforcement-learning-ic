@@ -11,7 +11,7 @@ import pandas as pd
 # TRAINING_FREQUENCY = 4
 # TARGET_NETWORK_UPDATE_FREQUENCY = 40000
 # MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-# REPLAY_START_SIZE = 50000
+# REY_START_SIZE = 50000
 
 # EXPLORATION_MAX = 1.0
 # EXPLORATION_MIN = 0.1
@@ -144,11 +144,9 @@ class DDQNNGame:
 
         exit = 0
         env.reset()
-        frameshistory = []
         done = False
         run = 0
         total_step = 0
-        saves = 0
         start = time.time()
         performance = []
 
@@ -173,16 +171,15 @@ class DDQNNGame:
                     env.render()
                     
                 if save:
-                    if total_step % model_save_freq == 0:
+                    if run % model_save_freq == 0:
                         # Cada model_save_freq de pasos totales guardo los pesos del modelo
                         
                             full_saving_path = saving_path + \
-                                "/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(
-                                    model_name, model_save_freq/1000, 
+                                "/model{}_run{}K_games{}K_copy_{}.h5".format(
+                                    model_name, 
                                     total_step_limit/1000000,total_run_limit/1000, 
-                                    saves)
+                                    run)
                             self.save_model(full_saving_path)
-                            saves += 1
 
                 action = self.move(current_state)
                 next_state, reward, terminal, info = env.step(action)
@@ -234,4 +231,4 @@ class DDQNNGame:
                 # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
                 exit = 1
                 
-        final = time.time()
+        #final = time.time()
