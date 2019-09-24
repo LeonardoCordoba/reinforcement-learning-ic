@@ -11,7 +11,7 @@ import pandas as pd
 # TRAINING_FREQUENCY = 4
 # TARGET_NETWORK_UPDATE_FREQUENCY = 40000
 # MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-# REPLAY_START_SIZE = 50000
+# REY_START_SIZE = 50000
 
 # EXPLORATION_MAX = 1.0
 # EXPLORATION_MIN = 0.1
@@ -141,11 +141,9 @@ class DDQNNGame:
 
         exit = 0
         env.reset()
-        frameshistory = []
         done = False
         run = 0
         total_step = 0
-        saves = 0
         start = time.time()
         performance = []
 
@@ -233,4 +231,4 @@ class DDQNNGame:
                 # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
                 exit = 1
                 
-        final = time.time()
+        #final = time.time()

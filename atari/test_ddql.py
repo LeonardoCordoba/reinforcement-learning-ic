@@ -102,7 +102,7 @@ game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
 env.reset()
 frameshistory = []
 done = False
-model_save_freq = 10000 # 50000
+model_save_freq = 100 # Ahora son partidas
 total_step_limit = 1000000 # 10000000
 total_run_limit = 1000 # 5000
 render = False #True
@@ -149,10 +149,14 @@ while exit == 0:
         if render:
             env.render()
 
-        if total_step % model_save_freq == 0:
+        if run % model_save_freq == 0:
             # Cada model_save_freq de pasos totales guardo los pesos del modelo
-            game_model.save_model(saving_path + "/model{}_freq{}K_run{}M_games{}K_copy{}.h5".format(MODEL_NAME, model_save_freq/1000, total_step_limit/1000000,total_run_limit/1000, saves))
-            saves += 1
+            full_saving_path = saving_path + \
+                 "/model{}_run{}K_games{}K_copy_{}.h5".format(
+                 model_name, 
+                 total_step_limit/1000000,total_run_limit/1000, 
+                 run)
+            self.save_model(full_saving_path)
 
         action = game_model.move(current_state)
         next_state, reward, terminal, info = env.step(action)
