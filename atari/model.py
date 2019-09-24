@@ -77,7 +77,7 @@ class CNNModel:
                 #     #insert flatten
                 #     self.model.add(Flatten())
                 if "activation" not in layer.keys():
-                    activation = None
+                    self.model.add(Dense(units=layer["units"]))
                 else:
                     activation = layer["activation"]
                     self.model.add(Dense(units=layer["units"],

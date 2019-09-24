@@ -79,8 +79,8 @@ class DDQNNGame:
 
         self._update_epsilon()
 
-        if total_step % self.ddqnn_params["model_persistence_update_frequency"] == 0:
-            self._save_model()
+        # if total_step % self.ddqnn_params["model_persistence_update_frequency"] == 0:
+        #     self._save_model()
 
         if total_step % self.ddqnn_params["target_network_update_frequency"] == 0:
             self._reset_target_network()
@@ -121,9 +121,6 @@ class DDQNNGame:
         loss = fit.history["loss"][0]
         accuracy = fit.history["acc"][0]
         return loss, accuracy, np.mean(max_q_values)
-    
-    def _save_model(self):
-        self.base_model.save_weights(self.paths["model"])
 
     def save_model(self, path):
         self.base_model.save_weights(path)
@@ -170,16 +167,18 @@ class DDQNNGame:
                 if render:
                     env.render()
                     
-                if save:
-                    if run % model_save_freq == 0:
-                        # Cada model_save_freq de pasos totales guardo los pesos del modelo
-                        
-                            full_saving_path = saving_path + \
-                                "/model{}_run{}K_games{}K_copy_{}.h5".format(
-                                    model_name, 
-                                    total_step_limit/1000000,total_run_limit/1000, 
-                                    run)
-                            self.save_model(full_saving_path)
+                if save and (total_step % model_save_freq == 0):
+                    # Cada model_save_freq de pasos totales guardo los pesos del modelo
+                    model_save_freq_k = int(model_save_freq/1000)
+                    total_step_limit_m = int(total_step_limit/1000000)
+                    total_run_limit_k = int(total_run_limit/1000)
+
+                    full_path = saving_path + "/model" + model_name + \
+                    "_freq" + str(model_save_freq_k) + "K_run" + \
+                    str(total_step_limit_m) + "M_games" + \
+                        str(total_run_limit_k) + "K_copy" + str(saves) + ".h5"
+                    self.save_model(full_path)
+                    saves += 1
 
                 action = self.move(current_state)
                 next_state, reward, terminal, info = env.step(action)
@@ -217,7 +216,8 @@ class DDQNNGame:
                             # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
                             pass
                         if save:
-                            self._save_model()
+                            full_path = f"{saving_path}/model{model_name}.h5"
+                            self.save_model(full_path)
                         break
                 else:
                     if terminal:
