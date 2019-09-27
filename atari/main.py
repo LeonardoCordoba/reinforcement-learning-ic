@@ -29,7 +29,7 @@ env = gym.make('SpaceInvaders-v0')
 path = os.getcwd()
 
 if WRAPPER == "DM":
-    env = wrap_deepmind(env, frame_stack=True)
+    env = wrap_deepmind(env,clip_rewards=False, frame_stack=True)
     INPUT_SHAPE = (84, 84, 4)
 else:
     from gym.wrappers import AtariPreprocessing
@@ -51,7 +51,7 @@ cnn_2 = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 
 # GasManija: mover a utils y armar lindo
 def gen_path(path, model_name, exp_num):
-    return os.path.join(path, "model", MODEL_NAME + "_" + str(exp_num))
+    return os.path.join("model", MODEL_NAME + "_" + str(exp_num))
 
 exp_num = 1
 
@@ -59,9 +59,9 @@ while os.path.exists(gen_path(path, MODEL_NAME, exp_num)):
     exp_num += 1
 
 saving_path = gen_path(path, MODEL_NAME, exp_num)
-os.mkdir(saving_path)
+os.mkdir(os.path.join(path,saving_path))
 
-paths = {"model":saving_path + "/model{}.h5".format(MODEL_NAME)}
+paths = {"model":os.path.join(path,saving_path) + "/model{}.h5".format(MODEL_NAME)}
 
 
 #%% 
@@ -86,9 +86,9 @@ train = True
 paths = {}
 # params = {"exploration_test":0.005}
 game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
-game_model.play(env=env, model_save_freq=10000, save=True, saving_path="model/100k_1/",
+game_model.play(env=env, model_save_freq=10000, save=True, saving_path=saving_path + "/",
                   total_step_limit=1000000, total_run_limit=5000, render=False,
-                  clip=True, wrapper=WRAPPER, model_name="100k")
+                  clip=False, wrapper=WRAPPER, model_name=MODEL_NAME)
 
 
 

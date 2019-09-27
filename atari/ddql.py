@@ -36,17 +36,6 @@ class DDQNNGame:
             assert "exploration_test" in ddqnn_params.keys()
         self.memory = []
         
-    
-    def get_model_copy(self, model):
-        # GAAAASSSS
-        # TODO: chequear que funcione bien
-        model_copy= keras.models.clone_model(model)
-        # TODO: replace with number of variables in input layer
-        # model_copy.build((None, 10)) 
-        model_copy.compile(optimizer='rmsprop', loss='categorical_crossentropy')
-        model_copy.set_weights(model.get_weights())
-        return model_copy
-    
     def move(self, state):
         if self.train is False:
             if np.random.rand() < self.ddqnn_params["exploration_test"]:
@@ -146,6 +135,7 @@ class DDQNNGame:
         total_step = 0
         start = time.time()
         performance = []
+        saves=0
 
         while exit == 0:
             run += 1
