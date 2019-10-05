@@ -14,7 +14,7 @@ from keras.models import load_model
 import numpy as np
 from model import get_predefined_model
 from ddql import DDQNNGame
-from preprocessing import scale_color, wrap_deepmind
+from preprocessing import wrap_deepmind, MainGymWrapper
 import gym
 import random
 import matplotlib.pyplot as plt
@@ -28,28 +28,28 @@ WRAPPER = "DM"
 env = gym.make('SpaceInvaders-v0')
 path = os.getcwd()
 
-if WRAPPER == "DM":
-    env = wrap_deepmind(env,clip_rewards=False, frame_stack=True)
-    INPUT_SHAPE = (84, 84, 4)
-else:
-    from gym.wrappers import AtariPreprocessing
-    env = AtariPreprocessing(env)
-    INPUT_SHAPE = (84, 84, 1)
+env = MainGymWrapper.wrap(env)
 
 # %% Instantiate model
+# TODO: need to check models with new env, only 'full' is working
 # ["full", "1,5M", "800k", "300k", "100k"]
-MODEL_NAME = "100k"
+
+INPUT_SHAPE = (4, 84, 84)
+MODEL_NAME = "full"
 
 cnn = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 cnn_2 = get_predefined_model(MODEL_NAME, INPUT_SHAPE)
 
+
+# To load model:
 # with open('model/json/' + MODEL_NAME + '.json','r') as f:
 #     model_json = json.load(f)
 
 # model = model_from_json(model_json)
 # model.load_weights("model/800k_1/model800k.h5")
+# TODO: add compile
 
-# GasManija: mover a utils y armar lindo
+# This adds a new folder if needed
 def gen_path(path, model_name, exp_num):
     return os.path.join("model", MODEL_NAME + "_" + str(exp_num))
 
@@ -88,8 +88,4 @@ paths = {}
 game_model = DDQNNGame(cnn, cnn_2, env, paths, params, train)
 game_model.play(env=env, model_save_freq=10000, save=True, saving_path=saving_path + "/",
                   total_step_limit=1000000, total_run_limit=5000, render=False,
-                  clip=False, wrapper=WRAPPER, model_name=MODEL_NAME)
-
-
-
-#%%
+                  clip=False, model_name=MODEL_NAME)

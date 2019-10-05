@@ -5,19 +5,7 @@ import shutil
 import keras
 import time
 import pandas as pd
-# GAMMA = 0.99
-# MEMORY_SIZE = 900000
-# BATCH_SIZE = 32
-# TRAINING_FREQUENCY = 4
-# TARGET_NETWORK_UPDATE_FREQUENCY = 40000
-# MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-# REY_START_SIZE = 50000
 
-# EXPLORATION_MAX = 1.0
-# EXPLORATION_MIN = 0.1
-# EXPLORATION_TEST = 0.02
-# EXPLORATION_STEPS = 850000
-# EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
 
 class DDQNNGame:
 
@@ -67,9 +55,6 @@ class DDQNNGame:
             loss, accuracy, average_max_q = self._train()
 
         self._update_epsilon()
-
-        # if total_step % self.ddqnn_params["model_persistence_update_frequency"] == 0:
-        #     self._save_model()
 
         if total_step % self.ddqnn_params["target_network_update_frequency"] == 0:
             self._reset_target_network()
@@ -126,7 +111,7 @@ class DDQNNGame:
         return weigths_base, weigths_target
     
     def play(self, env, save, saving_path, model_save_freq, total_step_limit,
-                total_run_limit, render, clip, wrapper, model_name):
+                total_run_limit, render, clip, model_name):
 
         exit = 0
         env.reset()
@@ -140,8 +125,6 @@ class DDQNNGame:
         while exit == 0:
             run += 1
             current_state = env.reset()
-            if wrapper != "DM":
-                current_state = np.reshape(current_state, (84, 84, 1))
             step = 0
             score = 0
             while exit == 0:
@@ -172,8 +155,6 @@ class DDQNNGame:
 
                 action = self.move(current_state)
                 next_state, reward, terminal, info = env.step(action)
-                if wrapper != "DM":
-                    next_state = np.reshape(next_state, (84, 84, 1))
 
                 # next_state = scale_color(next_state)
 
@@ -194,17 +175,6 @@ class DDQNNGame:
                                             "step":step,
                                             "score":score})
                         pd.DataFrame(performance).to_csv(saving_path + "/performance.csv", index=False)
-
-                        # game_model.save_run(score, step, run)
-                        if run % 50 == 0:
-                            # TODO aca podemos mas adelante agregar un log
-                            # weights_snap = self._weigths_snapshot()
-                            # print("Partida número: ", run)
-                            # print("Pesos modelo base: ", weights_snap[0])
-                            # print("Pesos modelo copia: ", weights_snap[1])
-                            # print(score)
-                            # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
-                            pass
                         if save:
                             full_path = f"{saving_path}/model{model_name}.h5"
                             self.save_model(full_path)
@@ -219,8 +189,4 @@ class DDQNNGame:
 
             # Corto por episodios
             if total_run_limit is not None and run >= total_run_limit:
-                # print ("Reached total run limit of: " + str(total_run_limit))
-                # print("Tiempo transcurrido de corrida {}".format(time.time()-start))
                 exit = 1
-                
-        #final = time.time()
