@@ -30,18 +30,6 @@ class CNNModel:
             Description of returned object.
 
         """
-        #assert "cnn" in parameters.keys(), """parameters must have a cnn key
-        #with a list of Conv2D dicts hyperparameters"""
-
-        #assert "dense" in parameters.keys(), """parameters must have a dense key
-        #with a list of dicts Dense hyperparameters"""
-
-        #assert "compiler" in parameters.keys(), """parameters must have a
-        #compiler key with a dict with loss, optimizer and metrcs
-        #hyperparameters"""
-
-        #cnn_layers = parameters["cnn"]
-        #dense_layers = parameters["dense"]
         compiler = parameters["compiler"]
 
         # First, add CNN layers
@@ -72,40 +60,12 @@ class CNNModel:
 
             elif layer["type"] == "dense":
                 print("added dense")
-                # TODO: chequear si es necesarion insertar un flatten
-                # if checklast 
-                #     #insert flatten
-                #     self.model.add(Flatten())
                 if "activation" not in layer.keys():
-                    activation = None
+                    self.model.add(Dense(units=layer["units"]))
                 else:
                     activation = layer["activation"]
                     self.model.add(Dense(units=layer["units"],
                                  activation=activation))
-            
-        # for cnn_hp in cnn_layers:
-        #     self.model.add(Conv2D(filters=cnn_hp["filters"],
-        #                           kernel_size=cnn_hp["kernel_size"],
-        #                           strides=cnn_hp["strides"],
-        #                           padding=cnn_hp["padding"],
-        #                           activation=cnn_hp["activation"],
-        #                           input_shape=cnn_hp["input_shape"],
-        #                           data_format=cnn_hp["data_format"])
-        #                    )
-
-        # # Second, flatten
-        # self.model.add(Flatten())
-
-        # # Third, add dense layers
-        # for dense_hp in dense_layers:
-        #     if "activation" not in dense_hp.keys():
-        #         activation = None
-        #     else:
-        #         activation = dense_hp["activation"]
-        #     self.model.add(Dense(units=dense_hp["units"],
-        #                          activation=activation))
-
-        # Last, compile
         self.model.compile(loss=compiler["loss"],
                            optimizer=compiler["optimizer"],
                            metrics=compiler["metrics"])
@@ -120,17 +80,17 @@ def get_predefined_model(model_name, input_shape):
         conv_1 = {"type": "cnn",
                   "filters": 32, "kernel_size": 8, "strides": (4, 4), "padding": "valid",
                   "activation": "relu", "input_shape": input_shape,
-                  "data_format":"channels_last"}
+                  "data_format":"channels_first"}
 
         conv_2 = {"type": "cnn",
                   "filters": 64, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
                   "activation": "relu", "input_shape": input_shape,
-                  "data_format": "channels_last"}
+                  "data_format": "channels_first"}
 
         conv_3 = {"type": "cnn",
                   "filters": 64, "kernel_size": 3, "strides": (1, 1), "padding": "valid",
                   "activation": "relu", "input_shape": input_shape,
-                  "data_format": "channels_last"}
+                  "data_format": "channels_first"}
 
         dense_1 = {"type":"dense",
                  "units": 512, "activation": "relu"}
@@ -148,6 +108,7 @@ def get_predefined_model(model_name, input_shape):
                 "compiler": compiler} 
 
     elif model_name == "1,5M":
+        # TODO: need to check using new env
         # Intermedio: 1.484.464
         conv_1 = {"type": "cnn",
                 "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
@@ -177,6 +138,7 @@ def get_predefined_model(model_name, input_shape):
                 "compiler": compiler}
 
     elif model_name == "300k":
+        # TODO: need to check using new env
         #1) Modelo muy chiquito: 337,584
         conv_1 = {"type": "cnn",
                 "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
@@ -203,6 +165,7 @@ def get_predefined_model(model_name, input_shape):
                 "compiler": compiler}
 
     elif model_name == "100k":
+        # TODO: need to check using new env
         # Modelo aún más chiquito: 98,032
         conv_1 = {"type": "cnn",
                     "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",
@@ -245,6 +208,7 @@ def get_predefined_model(model_name, input_shape):
                 "compiler": compiler}
 
     elif model_name == "800k":
+        # TODO: need to check using new env
         # Modelo intermedio B: 820,368
         conv_1 = {"type": "cnn",
                 "filters": 16, "kernel_size": 4, "strides": (2, 2), "padding": "valid",

@@ -3,48 +3,27 @@ import os
 import random
 import shutil
 import keras
+import time
+import pandas as pd
 
-GAMMA = 0.99
-MEMORY_SIZE = 900000
-BATCH_SIZE = 32
-TRAINING_FREQUENCY = 4
-TARGET_NETWORK_UPDATE_FREQUENCY = 40000
-MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-REPLAY_START_SIZE = 50000
-
-EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.1
-EXPLORATION_TEST = 0.02
-EXPLORATION_STEPS = 850000
-EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
 
 class DDQNNGame:
 
     def __init__(self, base_model, copy_model, env, paths, ddqnn_params, train):
         self.base_model = base_model.model
-        self.train = train # esto es para indicar si estamos entrenando o testeando
+        self.train = train
         if self.train:
-            # self.target_model = self.get_model_copy(self.base_model)
             self.target_model = copy_model.model
         self.env = env
         self.paths = paths
         self.ddqnn_params = ddqnn_params
         if self.train:
             self._reset_target_network()
-        self.epsilon = self.ddqnn_params["exploration_max"]
+            self.epsilon = self.ddqnn_params["exploration_max"]
+        else:
+            assert "exploration_test" in ddqnn_params.keys()
         self.memory = []
         
-    
-    def get_model_copy(self, model):
-        # GAAAASSSS
-        # TODO: chequear que funcione bien
-        model_copy= keras.models.clone_model(model)
-        # TODO: replace with number of variables in input layer
-        # model_copy.build((None, 10)) 
-        model_copy.compile(optimizer='rmsprop', loss='categorical_crossentropy')
-        model_copy.set_weights(model.get_weights())
-        return model_copy
-    
     def move(self, state):
         if self.train is False:
             if np.random.rand() < self.ddqnn_params["exploration_test"]:
@@ -76,9 +55,6 @@ class DDQNNGame:
             loss, accuracy, average_max_q = self._train()
 
         self._update_epsilon()
-
-        if total_step % self.ddqnn_params["model_persistence_update_frequency"] == 0:
-            self._save_model()
 
         if total_step % self.ddqnn_params["target_network_update_frequency"] == 0:
             self._reset_target_network()
@@ -119,9 +95,6 @@ class DDQNNGame:
         loss = fit.history["loss"][0]
         accuracy = fit.history["acc"][0]
         return loss, accuracy, np.mean(max_q_values)
-    
-    def _save_model(self):
-        self.base_model.save_weights(self.paths["model"])
 
     def save_model(self, path):
         self.base_model.save_weights(path)
@@ -136,3 +109,84 @@ class DDQNNGame:
             except IndexError:
                 pass
         return weigths_base, weigths_target
+    
+    def play(self, env, save, saving_path, model_save_freq, total_step_limit,
+                total_run_limit, render, clip, model_name):
+
+        exit = 0
+        env.reset()
+        done = False
+        run = 0
+        total_step = 0
+        start = time.time()
+        performance = []
+        saves=0
+
+        while exit == 0:
+            run += 1
+            current_state = env.reset()
+            step = 0
+            score = 0
+            while exit == 0:
+                if total_step >= total_step_limit:
+                    print ("Reached total step limit of: " + str(total_step_limit))
+                    # No sería mejor un break?
+                    print("Tiempo transcurrido de corrida {}".format(time.time()-start))
+                    exit = 1
+            
+                total_step += 1
+                step += 1
+
+                if render:
+                    env.render()
+                    
+                if save and (total_step % model_save_freq == 0):
+                    # Cada model_save_freq de pasos totales guardo los pesos del modelo
+                    model_save_freq_k = int(model_save_freq/1000)
+                    total_step_limit_m = int(total_step_limit/1000000)
+                    total_run_limit_k = int(total_run_limit/1000)
+
+                    full_path = saving_path + "/model" + model_name + \
+                    "_freq" + str(model_save_freq_k) + "K_run" + \
+                    str(total_step_limit_m) + "M_games" + \
+                        str(total_run_limit_k) + "K_copy" + str(saves) + ".h5"
+                    self.save_model(full_path)
+                    saves += 1
+
+                action = self.move(current_state)
+                next_state, reward, terminal, info = env.step(action)
+
+                # next_state = scale_color(next_state)
+
+                if clip:
+                    reward = np.sign(reward)
+                score += reward
+                
+                if self.train:
+                    self.remember(current_state, action, reward, next_state, terminal)
+
+                current_state = next_state
+
+                if self.train:
+                    self.step_update(total_step)
+
+                    if terminal:
+                        performance.append({"run":run,
+                                            "step":step,
+                                            "score":score})
+                        pd.DataFrame(performance).to_csv(saving_path + "/performance.csv", index=False)
+                        if save:
+                            full_path = f"{saving_path}/model{model_name}.h5"
+                            self.save_model(full_path)
+                        break
+                else:
+                    if terminal:
+                        performance.append({"run":run,
+                                            "total_step":total_step,
+                                            "score":score})
+                        pd.DataFrame(performance).to_csv(saving_path + "/performance.csv", index=False)
+                        break
+
+            # Corto por episodios
+            if total_run_limit is not None and run >= total_run_limit:
+                exit = 1

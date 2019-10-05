@@ -1,6 +1,7 @@
 recycling_robots/.ipynb_checkpoints/
-<<<<<<< HEAD
 .vscode/
-=======
-.vscode/
->>>>>>> origin
+atari/model/
+atari/model/100k_1/model100k.h5
+atari/__pycache__/preprocessing.cpython-37.pyc
+atari/__pycache__/ddql.cpython-37.pyc
+atari/model/100k_1/performance.csv
